@@ -1,10 +1,7 @@
 from fastapi.testclient import TestClient
-
 from main import app
-from test.util import Util
 
 client = TestClient(app)
-util = Util()
 
 def test_get_user_list_by_get_api():
     response = client.get("/users")
@@ -21,7 +18,17 @@ def test_create_user_by_post_api():
 
 
 def test_delete_users_by_del_api():
-    pass
+    response = client.post("/users", json={"name": "John", "age":25})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Delete User Successfully"
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert {"name": "John", "age":25} in response.json()
+
+    response = client.delete("/users/{username}")
+    assert response.status_code == 200
+    assert {"name": "John", "age": 25} not in response.json()
 
 def test_upload_users_by_post_api():
     pass

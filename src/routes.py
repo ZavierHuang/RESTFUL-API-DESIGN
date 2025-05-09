@@ -12,6 +12,6 @@ def get_users():
 
 @router.post("/users")
 def add_user(user: User):
-    service.add_user(user.dict())
+    service.add_user(user)
     return {"message": "Add User Successfully"}
 
