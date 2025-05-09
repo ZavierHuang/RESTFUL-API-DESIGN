@@ -1,7 +1,4 @@
-from http.client import HTTPException
-
 import pandas as pd
-from pydantic.v1 import ValidationError
 
 from src.models import User
 

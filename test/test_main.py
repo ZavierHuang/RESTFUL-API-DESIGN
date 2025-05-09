@@ -1,5 +1,4 @@
 import csv
-import io
 import os
 import pandas as pd
 import pytest
