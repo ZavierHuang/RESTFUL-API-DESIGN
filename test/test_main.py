@@ -23,6 +23,7 @@ def test_get_user_list_by_get_api():
     assert isinstance(response.json(), list)
     assert len(response.json()) == 0
 
+# Add User
 def test_create_user_by_post_api():
     response = client.post("/users", json={"name": "Zavier", "age":23})
     assert response.status_code == 200
@@ -43,11 +44,10 @@ def test_create_user_by_post_api_with_age_is_str_number():
     assert {"name": "Zavier", "age": 23} in response.json()
     assert len(response.json()) == 1
 
-
 def test_create_user_by_post_api_with_name_is_empty():
     response = client.post("/users", json={"name": "", "age": 10})
     assert response.status_code == 422
-    assert 'Name cannot be empty.' in response.json()["detail"]
+    assert 'String should have at least 1 character' in response.json()["detail"][0]['msg']
 
 def test_create_user_by_post_api_with_name_does_not_exist():
     response = client.post("/users", json={"age": 10})
@@ -74,6 +74,22 @@ def test_create_user_by_post_api_with_age_is_not_larger_than_zero():
     assert response.status_code == 422
     assert 'Age must be greater than 0.' in response.json()["detail"]
 
+def test_create_user_by_post_api_with_name_has_existed_to_update():
+    response = client.post("/users", json={"name": "Zavier", "age": 23})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Add User Successfully"
+
+    response = client.post("/users", json={"name": "Zavier", "age": 20})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Add User Successfully"
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert {"name": "Zavier", "age": 23} not in response.json()
+    assert {"name": "Zavier", "age": 20} in response.json()
+    assert len(response.json()) == 1
+
+# Delete User
 def test_delete_users_by_del_api():
     response = client.post("/users", json={"name": "John", "age":25})
     assert response.status_code == 200
@@ -97,6 +113,7 @@ def test_delete_users_by_del_api_with_name_does_not_exist():
     assert response.status_code == 200
     assert response.json()["message"] == "John does not exist"
 
+# Upload CSV + Add User
 def test_upload_users_by_post_api():
     with open(os.path.join(ROOT, "data/backend_users.csv"),'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
@@ -129,7 +146,7 @@ def test_upload_users_by_post_api_with_empty_csv():
     os.remove(file_path)
     assert os.path.exists(file_path) is False
 
-def test_upload_users_by_post_api_with_field_does_not_exist():
+def test_upload_users_by_post_api_with_Age_field_does_not_exist():
     file_path = os.path.join(ROOT, 'test/onlyNameField.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
@@ -171,6 +188,30 @@ def test_upload_users_by_post_api_with_age_is_not_number():
     assert response.status_code == 200
     assert len(response.json()) == 0
 
+def test_upload_users_by_post_api_with_name_is_empty():
+    file_path = os.path.join(ROOT, 'test/AgeNotValid.csv')
+    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Name', 'Age'])
+        writer.writerow(['Alice', 13])
+        writer.writerow(['', 11])
+        writer.writerow(['Charlie', 12])
+
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("AgeNotValid.csv", csvfile, 'text/csv')})
+        assert response.status_code == 404
+        assert 'Empty name is not valid' in response.json()["detail"]
+
+    os.remove(file_path)
+    assert os.path.exists(file_path) is False
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+# Calculate Average of each group
 def test_average_age_of_each_group_by_get_api():
     with open(os.path.join(ROOT, "data/backend_users.csv"),'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
@@ -189,3 +230,44 @@ def test_average_age_of_each_group_by_get_api_with_no_data():
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert response.json() == {}
+
+def test_average_age_of_each_group_by_get_api_with_Age_field_does_not_exist():
+    file_path = os.path.join(ROOT, 'test/onlyNameField.csv')
+    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Name'])
+        writer.writerow(['Alice'])
+        writer.writerow(['Bob'])
+        writer.writerow(['Charlie'])
+
+    assert os.path.exists(file_path) is True
+
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+    os.remove(file_path)
+    assert os.path.exists(file_path) is False
+
+def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
+    file_path = os.path.join(ROOT, 'test/AgeNotValid.csv')
+    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Name', 'Age'])
+        writer.writerow(['Alice', 20])
+        writer.writerow(['Bob', 11])
+        writer.writerow(['Aharlie', 'ab'])
+
+    assert os.path.exists(file_path) is True
+
+    with open(os.path.join(file_path),'rb') as csvfile:
+        response = client.post("/users/upload", files={"file":("AgeNotValid.csv", csvfile, 'text/csv')})
+        assert response.status_code == 404
+        assert 'Input should be a valid integer' in response.json()["detail"]
+
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+    os.remove(file_path)
+    assert os.path.exists(file_path) is False

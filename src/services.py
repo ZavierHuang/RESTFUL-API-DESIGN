@@ -1,4 +1,7 @@
+from http.client import HTTPException
+
 import pandas as pd
+from pydantic.v1 import ValidationError
 
 from src.models import User
 
@@ -10,8 +13,8 @@ class Services:
     def list_users(self):
         return self.userList
 
-
     def add_user(self, user):
+        self.userList = [item for item in self.userList if item['name'] != user.name]
         self.userList.append(user.dict())
 
     def delete_user(self, userName):
@@ -25,8 +28,10 @@ class Services:
         df = pd.read_csv(file)
 
         for _, row in df.iterrows():
+            if pd.isna(row['Name']):
+                self.userList.clear()
+                raise Exception('Empty name is not valid')
             self.userList.append(User(name=row['Name'], age=row['Age']).dict())
-
 
     def clear_users(self):
         self.userList.clear()
@@ -38,8 +43,8 @@ class Services:
 
         df['firstCharacter'] = df['name'].str[0]
 
-        # for key, group in df.groupby('firstCharacter'):
-        #     print(f"Group {key}")
-        #     print(group)
+        for key, group in df.groupby('firstCharacter'):
+            print(f"Group {key}")
+            print(group)
 
         return df.groupby('firstCharacter')['age'].mean().to_dict()

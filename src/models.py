@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
+
 
 class User(BaseModel):
-    name : str
+    name : constr(min_length=1)
     age : int
 
