@@ -28,14 +28,11 @@ class Services:
 
     def add_user_from_csv(self, file):
         df = pd.read_csv(file)
-        currentList = []
+        df = df.dropna()
 
         for _, row in df.iterrows():
-            if pd.isna(row['Name']):
-                raise Exception('Empty name is not valid')
-            currentList.append(User(name=row['Name'], age=row['Age']).dict())
+            self.userList.append(User(name=row['Name'], age=row['Age']).dict())
 
-        self.userList += currentList
 
     def clear_users(self):
         self.userList.clear()

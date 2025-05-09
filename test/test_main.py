@@ -174,7 +174,7 @@ def test_upload_users_by_post_api_with_age_is_not_number():
     assert response.status_code == 200
     assert len(response.json()) == 0
 
-def test_upload_users_by_post_api_with_name_is_empty():
+def test_upload_users_by_post_api_remove_row_of_name_is_empty():
     file_path = os.path.join(ROOT, 'test/existNameIsEmpty.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
@@ -187,12 +187,11 @@ def test_upload_users_by_post_api_with_name_is_empty():
 
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
-        assert response.status_code == 404
-        assert 'Empty name is not valid' in response.json()["detail"]
+        assert response.status_code == 200
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
+    assert len(response.json()) == 2
 
 # Calculate Average of each group
 def test_average_age_of_each_group_by_get_api():
