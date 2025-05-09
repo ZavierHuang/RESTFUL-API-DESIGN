@@ -1,5 +1,4 @@
 import os
-
 import pandas as pd
 from fastapi.testclient import TestClient
 from main import app
@@ -9,11 +8,19 @@ client = TestClient(app)
 ROOT = 'F:\GITHUB\FAST_API_Web_RESTFUL'
 
 def test_get_user_list_by_get_api():
+    response = client.get("/init")
+    assert response.status_code == 200
+
     response = client.get("/users")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+    assert len(response.json()) == 0
+
 
 def test_create_user_by_post_api():
+    response = client.get("/init")
+    assert response.status_code == 200
+
     response = client.post("/users", json={"name": "Zavier", "age":23})
     assert response.status_code == 200
     assert response.json()["message"] == "Add User Successfully"
@@ -21,15 +28,21 @@ def test_create_user_by_post_api():
     response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "Zavier", "age":23} in response.json()
+    assert len(response.json()) == 1
+
 
 
 def test_delete_users_by_del_api():
+    response = client.get("/init")
+    assert response.status_code == 200
+
     response = client.post("/users", json={"name": "John", "age":25})
     assert response.status_code == 200
 
     response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "John", "age":25} in response.json()
+    assert len(response.json()) == 1
 
     response = client.delete("/users/John")
     assert response.status_code == 200
@@ -38,8 +51,13 @@ def test_delete_users_by_del_api():
     response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "John", "age": 25} not in response.json()
+    assert len(response.json()) == 0
+
 
 def test_upload_users_by_post_api():
+    response = client.get("/init")
+    assert response.status_code == 200
+
     with open(os.path.join(ROOT, "data/backend_users.csv"),'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
         csvfile.seek(0)  # go back to the start of csv file

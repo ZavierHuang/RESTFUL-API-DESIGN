@@ -6,6 +6,9 @@ from src.services import Services
 router = APIRouter()
 service = Services()
 
+@router.get("/init")
+def clear_users():
+    return service.clear_users()
 @router.get("/users")
 def get_users():
     return service.list_users()

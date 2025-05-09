@@ -24,3 +24,6 @@ class Services:
         for _, row in df.iterrows():
             self.userList.append({"name": row['Name'], "age": row['Age']})
 
+    def clear_users(self):
+        self.userList.clear()
+
