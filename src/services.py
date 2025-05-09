@@ -1,5 +1,7 @@
 import pandas as pd
 
+from src.models import User
+
 
 class Services:
     def __init__(self):
@@ -16,20 +18,21 @@ class Services:
         for item in self.userList:
             if item['name'] == userName:
                 self.userList.remove(item)
-                return
+                return True
+        return False
 
     def add_user_from_csv(self, file):
         df = pd.read_csv(file)
 
         for _, row in df.iterrows():
-            self.userList.append({"name": row['Name'], "age": row['Age']})
+            self.userList.append(User(name=row['Name'], age=row['Age']).dict())
+
 
     def clear_users(self):
         self.userList.clear()
 
     def calculate_users_average_age_of_each_group(self):
         df = pd.DataFrame(self.userList)
-
         if df.empty:
             return {}
 
