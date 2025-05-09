@@ -37,6 +37,11 @@ def test_create_user_by_post_api_with_age_is_str_number():
     assert response.status_code == 422
     assert "Input should be a valid integer" in response.json()["detail"][0]['msg']
 
+def test_create_user_by_post_api_with_long_space_name():
+    response = client.post("/users", json={"name": "    ", "age": 23})
+    assert response.status_code == 422
+    assert "Name cannot be Empty." in response.json()["detail"]
+
 def test_create_user_by_post_api_with_name_is_empty():
     response = client.post("/users", json={"name": "", "age": 10})
     assert response.status_code == 422
@@ -165,14 +170,11 @@ def test_upload_users_by_post_api_with_age_is_not_number():
 
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
-        assert response.status_code == 404
-        assert 'Input should be a valid integer' in response.json()["detail"]
-
-    
+        assert response.status_code == 200
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
+    assert len(response.json()) == 2
 
 def test_upload_users_by_post_api_remove_row_of_name_is_empty():
     file_path = os.path.join(ROOT, 'test/existNameIsEmpty.csv')
@@ -182,6 +184,7 @@ def test_upload_users_by_post_api_remove_row_of_name_is_empty():
         writer.writerow(['Alice', 13])
         writer.writerow(['', 11])
         writer.writerow(['Charlie', 12])
+        writer.writerow(['    ', 25])
 
     assert os.path.exists(file_path) is True
 
@@ -241,11 +244,10 @@ def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
 
     with open(os.path.join(file_path),'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("ageNotValid.csv", csvfile, 'text/csv')})
-        assert response.status_code == 404
-        assert 'Input should be a valid integer' in response.json()["detail"]
+        assert response.status_code == 200
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
-    assert len(response.json()) == 0
+    assert len(response.json()) == 2
 
     

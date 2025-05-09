@@ -15,6 +15,9 @@ def get_users():
 
 @router.post("/users")
 def add_user(user: User):
+    user.name = user.name.strip()
+    if len(user.name) == 0:
+        raise HTTPException(status_code=422, detail="Name cannot be Empty.")
     if user.age <= 0:
         raise HTTPException(status_code=422, detail="Age must be greater than 0.")
 

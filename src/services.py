@@ -1,5 +1,4 @@
 import pandas as pd
-
 from src.models import User
 
 
@@ -28,10 +27,18 @@ class Services:
 
     def add_user_from_csv(self, file):
         df = pd.read_csv(file)
+
+        df['Name'] = df['Name'].str.strip()
+        df['Age'] = pd.to_numeric(df['Age'], errors='coerce')
         df = df.dropna()
 
+        df['Age'] = df['Age'].astype(int)
+        df = df[df['Age'] >= 0]
+        df = df[df['Name'].str.len() > 0]
+
         for _, row in df.iterrows():
-            self.userList.append(User(name=row['Name'], age=row['Age']).dict())
+            user = User(name=row['Name'], age=row['Age']).dict()
+            self.userList.append(user)
 
 
     def clear_users(self):
