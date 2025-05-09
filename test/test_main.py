@@ -20,13 +20,16 @@ def test_create_user_by_post_api():
 def test_delete_users_by_del_api():
     response = client.post("/users", json={"name": "John", "age":25})
     assert response.status_code == 200
-    assert response.json()["message"] == "Delete User Successfully"
 
     response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "John", "age":25} in response.json()
 
-    response = client.delete("/users/{username}")
+    response = client.delete("/users/John")
+    assert response.status_code == 200
+    assert response.json()["message"] == "Delete John Successfully"
+
+    response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "John", "age": 25} not in response.json()
 

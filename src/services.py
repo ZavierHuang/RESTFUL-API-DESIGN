@@ -7,5 +7,12 @@ class Services:
 
 
     def add_user(self, user):
-        self.userList.append(user)
+        self.userList.append(user.dict())
+
+    def delete_user(self, userName):
+        for item in self.userList:
+            if item['name'] == userName:
+                self.userList.remove(item)
+                return
+
 

@@ -15,3 +15,7 @@ def add_user(user: User):
     service.add_user(user)
     return {"message": "Add User Successfully"}
 
+@router.delete("/users/{username}")
+def delete_user(username: str):
+    service.delete_user(username)
+    return {"message": f"Delete {username} Successfully"}
