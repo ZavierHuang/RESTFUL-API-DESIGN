@@ -1,9 +1,10 @@
 from fastapi import APIRouter
-from src import services
+from src.services import Services
 
 router = APIRouter()
+service = Services()
 
 @router.get("/users")
 def get_users():
-    return services.list_users()
+    return service.list_users()
 
