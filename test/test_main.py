@@ -1,3 +1,4 @@
+import csv
 import io
 import os
 import pandas as pd
@@ -102,5 +103,7 @@ def test_average_age_of_each_group_by_get_api():
     assert response.status_code == 200
     assert len(response.json()) == totalGroups
 
-
+def test_average_age_of_each_group_by_get_api_with_no_data():
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
 
