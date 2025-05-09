@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 class Services:
     def __init__(self):
         self.userList = []
@@ -15,4 +18,9 @@ class Services:
                 self.userList.remove(item)
                 return
 
+    def add_user_from_csv(self, file):
+        df = pd.read_csv(file)
+
+        for _, row in df.iterrows():
+            self.userList.append({"name": row['Name'], "age": row['Age']})
 
