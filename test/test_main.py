@@ -1,3 +1,4 @@
+import io
 import os
 import pandas as pd
 import pytest
@@ -6,7 +7,7 @@ from main import app
 
 client = TestClient(app)
 
-ROOT = 'F:\GITHUB\FAST_API_Web_RESTFUL'
+ROOT = r'F:\GITHUB\FAST_API_Web_RESTFUL'
 
 @pytest.fixture(autouse=True)
 def setUp():
@@ -68,6 +69,19 @@ def test_upload_users_by_post_api():
     response = client.get("/users")
     assert response.status_code == 200
     assert totalData == len(response.json())
+
+
+def test_upload_users_by_post_api_with_empty_csv():
+    file_path = os.path.join(ROOT, 'test/empty.csv')
+
+    with open(file_path, 'w', encoding='utf-8') as writeFile:
+        writeFile.write('')
+
+    with open(file_path, 'rb') as readFile:
+        response = client.post("/users/upload", files={"file": ("empty.csv", readFile, 'text/csv')})
+        assert response.status_code == 404
+        assert "No columns to parse" in response.json()["detail"]
+
 
 def test_average_age_of_each_group_by_get_api():
     with open(os.path.join(ROOT, "data/backend_users.csv"),'rb') as csvfile:
