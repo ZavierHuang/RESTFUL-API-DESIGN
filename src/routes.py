@@ -15,8 +15,12 @@ def get_users():
 
 @router.post("/users")
 def add_user(user: User):
+    if user.age <= 0:
+        raise HTTPException(status_code=422, detail="Age must be greater than 0.")
+
     service.add_user(user)
     return {"message": "Add User Successfully"}
+
 
 @router.delete("/users/{username}")
 def delete_user(username: str):
