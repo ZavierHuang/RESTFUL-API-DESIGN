@@ -43,8 +43,8 @@ class Services:
 
         df['firstCharacter'] = df['name'].str[0]
 
-        for key, group in df.groupby('firstCharacter'):
-            print(f"Group {key}")
-            print(group)
+        # for key, group in df.groupby('firstCharacter'):
+        #     print(f"Group {key}")
+        #     print(group)
 
         return df.groupby('firstCharacter')['age'].mean().to_dict()
