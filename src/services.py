@@ -5,7 +5,12 @@ from src.models import User
 
 class Services:
     def __init__(self):
-        self.userList = []
+        self.userList = [
+            {'name': 'Zavier', 'age': 20},
+            {'name': 'John', 'age': 21},
+            {'name': 'Steve', 'age': 22},
+            {'name': 'Charies', 'age': 23}
+        ]
 
     def list_users(self):
         return self.userList
@@ -23,12 +28,14 @@ class Services:
 
     def add_user_from_csv(self, file):
         df = pd.read_csv(file)
+        currentList = []
 
         for _, row in df.iterrows():
             if pd.isna(row['Name']):
-                self.userList.clear()
                 raise Exception('Empty name is not valid')
-            self.userList.append(User(name=row['Name'], age=row['Age']).dict())
+            currentList.append(User(name=row['Name'], age=row['Age']).dict())
+
+        self.userList += currentList
 
     def clear_users(self):
         self.userList.clear()

@@ -6,5 +6,4 @@ app = FastAPI(title="FastAPI")
 
 app.include_router(routes.router)
 
-print(app.routes)
-# uvicorn main:app --reload
+# uvicorn main:app --port 8080

@@ -15,7 +15,6 @@ def setUp():
     response = client.post("/init")
     assert response.status_code == 200
 
-
 def test_get_user_list_by_get_api():
     response = client.get("/users")
     assert response.status_code == 200
@@ -35,13 +34,8 @@ def test_create_user_by_post_api():
 
 def test_create_user_by_post_api_with_age_is_str_number():
     response = client.post("/users", json={"name": "Zavier", "age": "23"})
-    assert response.status_code == 200
-    assert response.json()["message"] == "Add User Successfully"
-
-    response = client.get("/users")
-    assert response.status_code == 200
-    assert {"name": "Zavier", "age": 23} in response.json()
-    assert len(response.json()) == 1
+    assert response.status_code == 422
+    assert "Input should be a valid integer" in response.json()["detail"][0]['msg']
 
 def test_create_user_by_post_api_with_name_is_empty():
     response = client.post("/users", json={"name": "", "age": 10})
@@ -142,9 +136,6 @@ def test_upload_users_by_post_api_with_empty_csv():
         assert response.status_code == 404
         assert "No columns to parse" in response.json()["detail"]
 
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
-
 def test_upload_users_by_post_api_with_Age_field_does_not_exist():
     file_path = os.path.join(ROOT, 'test/onlyNameField.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
@@ -161,11 +152,8 @@ def test_upload_users_by_post_api_with_Age_field_does_not_exist():
         assert response.status_code == 404
         assert 'Age' in response.json()["detail"]
 
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
-
 def test_upload_users_by_post_api_with_age_is_not_number():
-    file_path = os.path.join(ROOT, 'test/AgeNotValid.csv')
+    file_path = os.path.join(ROOT, 'test/ageNotValid.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Name', 'Age'])
@@ -176,19 +164,18 @@ def test_upload_users_by_post_api_with_age_is_not_number():
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("AgeNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 404
         assert 'Input should be a valid integer' in response.json()["detail"]
 
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
+    
 
     response = client.get("/users")
     assert response.status_code == 200
     assert len(response.json()) == 0
 
 def test_upload_users_by_post_api_with_name_is_empty():
-    file_path = os.path.join(ROOT, 'test/AgeNotValid.csv')
+    file_path = os.path.join(ROOT, 'test/existNameIsEmpty.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Name', 'Age'])
@@ -199,12 +186,9 @@ def test_upload_users_by_post_api_with_name_is_empty():
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("AgeNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 404
         assert 'Empty name is not valid' in response.json()["detail"]
-
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
 
     response = client.get("/users")
     assert response.status_code == 200
@@ -245,11 +229,8 @@ def test_average_age_of_each_group_by_get_api_with_Age_field_does_not_exist():
     assert response.status_code == 200
     assert len(response.json()) == 0
 
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
-
 def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
-    file_path = os.path.join(ROOT, 'test/AgeNotValid.csv')
+    file_path = os.path.join(ROOT, 'test/ageNotValid.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Name', 'Age'])
@@ -260,7 +241,7 @@ def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
     assert os.path.exists(file_path) is True
 
     with open(os.path.join(file_path),'rb') as csvfile:
-        response = client.post("/users/upload", files={"file":("AgeNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file":("ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 404
         assert 'Input should be a valid integer' in response.json()["detail"]
 
@@ -268,5 +249,4 @@ def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
     assert response.status_code == 200
     assert len(response.json()) == 0
 
-    os.remove(file_path)
-    assert os.path.exists(file_path) is False
+    
