@@ -129,47 +129,26 @@ def test_upload_users_by_post_api():
     assert totalData == len(response.json())
 
 def test_upload_users_by_post_api_with_empty_csv():
-    file_path = os.path.join(ROOT, 'test/empty.csv')
-
-    with open(file_path, 'w', encoding='utf-8') as writeFile:
-        writeFile.write('')
-
-    assert os.path.exists(file_path) is True
+    file_path = os.path.join(ROOT, 'data/test_emptyFile.csv')
 
     with open(file_path, 'rb') as readFile:
-        response = client.post("/users/upload", files={"file": ("empty.csv", readFile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("test_emptyFile.csv", readFile, 'text/csv')})
         assert response.status_code == 404
         assert "No columns to parse" in response.json()["detail"]
 
 def test_upload_users_by_post_api_with_Age_field_does_not_exist():
-    file_path = os.path.join(ROOT, 'test/onlyNameField.csv')
-    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name'])
-        writer.writerow(['Alice'])
-        writer.writerow(['Bob'])
-        writer.writerow(['Charlie'])
-
-    assert os.path.exists(file_path) is True
+    file_path = os.path.join(ROOT, 'data/test_onlyNameField.csv')
 
     with open(file_path,'rb') as csvfile:
-        response = client.post("/users/upload", files={"file":("onlyNameField.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file":("test_onlyNameField.csv", csvfile, 'text/csv')})
         assert response.status_code == 404
         assert 'Age' in response.json()["detail"]
 
 def test_upload_users_by_post_api_with_age_is_not_number():
-    file_path = os.path.join(ROOT, 'test/ageNotValid.csv')
-    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Age'])
-        writer.writerow(['Alice', 'ab'])
-        writer.writerow(['Bob', 11])
-        writer.writerow(['Charlie', 12])
-
-    assert os.path.exists(file_path) is True
+    file_path = os.path.join(ROOT, 'data/test_ageNotValid.csv')
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("test_ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
     response = client.get("/users")
@@ -177,7 +156,7 @@ def test_upload_users_by_post_api_with_age_is_not_number():
     assert len(response.json()) == 2
 
 def test_upload_users_by_post_api_remove_row_of_name_is_empty():
-    file_path = os.path.join(ROOT, 'test/existNameIsEmpty.csv')
+    file_path = os.path.join(ROOT, 'data/test_existEmptyName.csv')
     with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['Name', 'Age'])
@@ -189,7 +168,7 @@ def test_upload_users_by_post_api_remove_row_of_name_is_empty():
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("ageNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("test_ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
     response = client.get("/users")
@@ -197,6 +176,12 @@ def test_upload_users_by_post_api_remove_row_of_name_is_empty():
     assert len(response.json()) == 2
 
 # Calculate Average of each group
+def dataframe_stay_valid_data(df):
+    df = df[df['Name'].str.strip().str.len() > 0]
+    df = df[pd.to_numeric(df['Age'], errors='coerce').notnull()]
+    df = df[df['Age'].astype(int) >= 0]
+    return df
+
 def test_average_age_of_each_group_by_get_api():
     with open(os.path.join(ROOT, "data/backend_users.csv"),'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
@@ -204,8 +189,9 @@ def test_average_age_of_each_group_by_get_api():
 
         csvfile.seek(0)  # go back to the start of csv file
         df = pd.read_csv(csvfile)
-        df['firstCharacter'] = df['Name'].str[0]
-        totalGroups = df.groupby('firstCharacter').ngroups
+        df['firstCharacter'] = df['Name'].str.strip().str[0]
+        df_valid_data = dataframe_stay_valid_data(df)
+        totalGroups = df_valid_data.groupby('firstCharacter').ngroups
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
@@ -217,37 +203,27 @@ def test_average_age_of_each_group_by_get_api_with_no_data():
     assert response.json() == {}
 
 def test_average_age_of_each_group_by_get_api_with_Age_field_does_not_exist():
-    file_path = os.path.join(ROOT, 'test/onlyNameField.csv')
-    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name'])
-        writer.writerow(['Alice'])
-        writer.writerow(['Bob'])
-        writer.writerow(['Charlie'])
-
-    assert os.path.exists(file_path) is True
+    with open(os.path.join(ROOT, "data/test_onlyNameField.csv"), 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_onlyNameField.csv", csvfile, 'text/csv')})
+        assert response.status_code == 404
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert len(response.json()) == 0
 
 def test_average_age_of_each_group_by_get_api_with_age_is_not_number():
-    file_path = os.path.join(ROOT, 'test/ageNotValid.csv')
-    with open(file_path, mode='w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(['Name', 'Age'])
-        writer.writerow(['Alice', 20])
-        writer.writerow(['Bob', 11])
-        writer.writerow(['Aharlie', 'ab'])
-
-    assert os.path.exists(file_path) is True
-
-    with open(os.path.join(file_path),'rb') as csvfile:
-        response = client.post("/users/upload", files={"file":("ageNotValid.csv", csvfile, 'text/csv')})
+    with open(os.path.join(ROOT, "data/test_ageNotValid.csv"), 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_ageNotValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+
+        csvfile.seek(0)  # go back to the start of csv file
+        df = pd.read_csv(csvfile)
+        df['firstCharacter'] = df['Name'].str.strip().str[0]
+        df_valid_data = dataframe_stay_valid_data(df)
+        totalGroups = df_valid_data.groupby('firstCharacter').ngroups
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
-    assert len(response.json()) == 2
+    assert len(response.json()) == totalGroups
 
     

@@ -49,7 +49,7 @@ class Services:
         if df.empty:
             return {}
 
-        df['firstCharacter'] = df['name'].str[0]
+        df['firstCharacter'] = df['name'].str.strip().str[0]
 
         # for key, group in df.groupby('firstCharacter'):
         #     print(f"Group {key}")
