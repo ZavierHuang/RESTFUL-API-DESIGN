@@ -77,10 +77,15 @@ def test_upload_users_by_post_api_with_empty_csv():
     with open(file_path, 'w', encoding='utf-8') as writeFile:
         writeFile.write('')
 
+    assert os.path.exists(file_path) is True
+
     with open(file_path, 'rb') as readFile:
         response = client.post("/users/upload", files={"file": ("empty.csv", readFile, 'text/csv')})
         assert response.status_code == 404
         assert "No columns to parse" in response.json()["detail"]
+
+    os.remove(file_path)
+    assert os.path.exists(file_path) is False
 
 
 def test_average_age_of_each_group_by_get_api():
