@@ -27,3 +27,16 @@ class Services:
     def clear_users(self):
         self.userList.clear()
 
+    def calculate_users_average_age_of_each_group(self):
+        df = pd.DataFrame(self.userList)
+
+        if df.empty:
+            return {}
+
+        df['firstCharacter'] = df['name'].str[0]
+
+        # for key, group in df.groupby('firstCharacter'):
+        #     print(f"Group {key}")
+        #     print(group)
+
+        return df.groupby('firstCharacter')['age'].mean().to_dict()

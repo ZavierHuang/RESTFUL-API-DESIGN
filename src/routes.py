@@ -6,7 +6,7 @@ from src.services import Services
 router = APIRouter()
 service = Services()
 
-@router.get("/init")
+@router.post("/init")
 def clear_users():
     return service.clear_users()
 @router.get("/users")
@@ -30,3 +30,7 @@ def upload_csv_users(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
     return {"message": "Users Added From CSV"}
+
+@router.get("/users/averageAge")
+def calculate_users_average_age_of_each_group():
+    return service.calculate_users_average_age_of_each_group()
