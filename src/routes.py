@@ -8,7 +8,8 @@ service = Services()
 
 @router.post("/init")
 def clear_users():
-    return service.clear_users()
+    service.clear_users()
+    return {"message": "Clear User List Successfully"}
 @router.get("/users")
 def get_users():
     return service.list_users()

@@ -11,17 +11,26 @@ def setUp():
     response = client.post("/init")
     assert response.status_code == 200
 
+"""
+Clear User List
+"""
+def test_clear_user_list():
+    response = client.post("/init")
+    assert response.status_code == 200
+    assert 'Clear User List Successfully' in response.json()['message']
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == []
 
 """
 Get User List
 """
-
-
 def test_get_user_list_by_get_api():
     response = client.get("/users")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    assert len(response.json()) == 0
+    assert response.json() == []
 
 
 """
@@ -155,7 +164,7 @@ def test_delete_users_by_del_api():
     response = client.get("/users")
     assert response.status_code == 200
     assert {"name": "Zavier", "age": 25} not in response.json()
-    assert len(response.json()) == 0
+    assert response.json() == []
 
 
 def test_delete_users_by_del_api_with_name_does_not_exist():
@@ -256,7 +265,6 @@ def test_upload_users_by_post_api_with_empty_csv():
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
     assert response.json() == []
 
 
@@ -271,7 +279,6 @@ def test_upload_users_by_post_api_with_only_one_field():
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
     assert response.json() == []
 
 
@@ -286,7 +293,6 @@ def test_upload_users_by_post_api_with_no_label_in_csv():
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
     assert response.json() == []
 
 def test_upload_users_by_post_api_with_not_csv_file():
@@ -300,7 +306,6 @@ def test_upload_users_by_post_api_with_not_csv_file():
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert len(response.json()) == 0
     assert response.json() == []
 
 """
