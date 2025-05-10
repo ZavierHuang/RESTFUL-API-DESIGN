@@ -1,6 +1,4 @@
-import csv
 import os
-import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -159,24 +157,6 @@ Upload CSV + Add User
 6.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
 """
 
-def calcualteTotalValidData(file_path):
-    total = 0
-
-    with open(file_path, newline='', encoding='utf-8') as csvfile:
-        rows = csv.reader(csvfile)
-
-        for row in rows:
-            try:
-                name = row[0]
-                age = row[1]
-
-                if len(name.strip()) > 0 and age.isdigit() and int(age) > 0:
-                    total += 1
-            except IndexError:
-                continue
-
-    return total
-
 def test_upload_users_by_post_api():
     file_path = os.path.join(ROOT, "data/backend_users.csv")
     assert os.path.exists(file_path) is True
@@ -224,10 +204,9 @@ def test_upload_users_by_post_api_with_invalid_data_mix():
         response = client.post("/users/upload", files={"file": ("test_invalidDataMix.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
-    expectedJson = {'U': 30}
     response = client.get("/users")
     assert response.status_code == 200
-    assert response.json() == expectedJson
+    assert len(response.json()) == 1
 
 def test_upload_users_by_post_api_with_empty_csv():
     file_path = os.path.join(ROOT, 'data/test_emptyFile.csv')
@@ -309,7 +288,7 @@ def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
         response = client.post("/users/upload", files={"file": ("test_InvalidDataMix.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
-    expectedJson = {'A': 13.0, 'C': 12.0}
+    expectedJson = {'U': 30.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert response.json() == expectedJson
