@@ -253,7 +253,7 @@ Calculate Average of each group
 
 2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json()) == {...}
 3.【200】Not All Name is Valid         => (data/test_NotAllNameIsValid.csv)  => response.json()) == {...}
-4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)
+4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)     => response.json()) == {...}
 
 5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json()) == {}
 6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json()) == {}
