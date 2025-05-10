@@ -27,18 +27,18 @@ Add User
 1.【200】Normal Case         (str: "User", int: 10)        =>  'Add User Successfully'
 
 2.【200】Age is str number   (str: "User", int: "10")      =>  'Add User Successfully'
-3.【422】Age is not number   (str: "User", str: "10")      =>  'Input should be a valid integer'
+3.【422】Age is not number   (str: "User", str: "ab")      =>  'Input should be a valid integer'
 4.【422】Age <= 0            (str: "User", int: -1)        =>  'Age must be greater than 0.'
 
 5.【200】Name with Space     (str: "  User  ", int: 10)    =>  'Add User Successfully'
 6.【422】Name is empty       (str: ""          , int: 10)  =>  'Name cannot be Empty.
 7.【422】Name is empty(mul)  (str: "          ", int: 10)  =>  'Name cannot be Empty.'
 8.【422】Name is not string  (int: 123         , int: 10)  =>  'Input should be a valid string'
-9.【200】Same name to update ("User", 13) -> ("User", 10)  =>  'Add User Successfully'
+9.【200】Update the age      ("User", 13) -> ("User", 10)  =>  'Add User Successfully'
 
 10.【422] Name Field doesn't exist (Non, int: 23)                    =>  'Field required'
 11.【422] Age Field doesn't exist (str:"User", Non)                  =>  'Field required'
-12.【422] Both of Name and Age Field don't exist (Non, Non)          =>  'Field required'
+12.【422] Neither the name nor the age field exists (Non, Non)       =>  'Field required'
 """
 
 def test_create_user_by_post_api():
@@ -155,6 +155,7 @@ Upload CSV + Add User
 
 5.【422】Empty CSV                     => (data/test_emptyFile.csv)       => "No columns to parse"
 6.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
+7.【422】No Label in CSV               => (data/test_NoLabel.csv)         => "Name"
 """
 
 def test_upload_users_by_post_api():
@@ -172,6 +173,7 @@ def test_upload_users_by_post_api():
     assert response.status_code == 200
     assert len(response.json()) == 34
 
+
 def test_upload_users_by_post_api_with_age_is_not_valid():
     file_path = os.path.join(ROOT, 'data/test_NotAllAgeIsValid.csv')
     assert os.path.exists(file_path) is True
@@ -179,10 +181,15 @@ def test_upload_users_by_post_api_with_age_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
+
+    expectedJson = [{'name': 'Bob', 'age': 11}, {'name': 'Charlie', 'age': 12}]
 
     response = client.get("/users")
     assert response.status_code == 200
     assert len(response.json()) == 2
+    assert response.json() == expectedJson
+
 
 def test_upload_users_by_post_api_with_name_is_not_valid():
     file_path = os.path.join(ROOT, 'data/test_NotAllNameIsValid.csv')
@@ -191,10 +198,14 @@ def test_upload_users_by_post_api_with_name_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
+
+    expectedJson = [{'name': 'Alice', 'age': 13}, {'name': 'Charlie', 'age': 12}]
 
     response = client.get("/users")
     assert response.status_code == 200
     assert len(response.json()) == 2
+    assert response.json() == expectedJson
 
 def test_upload_users_by_post_api_with_invalid_data_mix():
     file_path = os.path.join(ROOT, 'data/test_InValidDataMix.csv')
@@ -203,10 +214,13 @@ def test_upload_users_by_post_api_with_invalid_data_mix():
     with open(file_path,'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_invalidDataMix.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
 
+    expectedJson = [{'name': 'User', 'age': 30}]
     response = client.get("/users")
     assert response.status_code == 200
     assert len(response.json()) == 1
+    assert response.json() == expectedJson
 
 def test_upload_users_by_post_api_with_empty_csv():
     file_path = os.path.join(ROOT, 'data/test_emptyFile.csv')
@@ -217,6 +231,11 @@ def test_upload_users_by_post_api_with_empty_csv():
         assert response.status_code == 422
         assert "No columns to parse" in response.json()["detail"]
 
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+    assert response.json() == []
+
 def test_upload_users_by_post_api_with_only_one_field():
     file_path = os.path.join(ROOT, 'data/test_onlyNameField.csv')
     assert os.path.exists(file_path) is True
@@ -226,16 +245,36 @@ def test_upload_users_by_post_api_with_only_one_field():
         assert response.status_code == 422
         assert 'Age' in response.json()["detail"]
 
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+    assert response.json() == []
+
+def test_upload_users_by_post_api_with_no_label_in_csv():
+    file_path = os.path.join(ROOT, 'data/test_NoLabelData.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path,'rb') as csvfile:
+        response = client.post("/users/upload", files={"file":("test_NoLabelData.csv", csvfile, 'text/csv')})
+        assert response.status_code == 422
+        assert 'Name' in response.json()["detail"]
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+    assert response.json() == []
+
 """
 Calculate Average of each group 
-1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)        => response.json()) == {...}
+1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)           => response.json() == {...}
 
-2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json()) == {...}
-3.【200】Not All Name is Valid         => (data/test_NotAllNameIsValid.csv)  => response.json()) == {...}
-4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)     => response.json()) == {...}
+2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json() == {...}
+3.【200】Not All Name is Valid         => (data/test_NtAllNameIsValid.csv)   => response.json() == {...}
+4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)     => response.json() == {...}
 
-5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json()) == {}
-6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json()) == {}
+5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json() == {}
+6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json() == {}
+7.【200】No Label in CSV               => (data/test_NoLabelData.csv)     => response.json() == {}
 """
 
 def test_average_age_of_each_group_by_get_api():
@@ -245,6 +284,7 @@ def test_average_age_of_each_group_by_get_api():
     with open(file_path,'rb') as csvfile:
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
 
     expectedJson = {'A': 9.0, 'B': 14.0, 'C': 16.0, 'E': 29.0, 'F': 6.0,
                     'I': 13.0, 'K': 14.0, 'M': 27.0, 'N': 16.5, 'P': 16.25,
@@ -252,6 +292,7 @@ def test_average_age_of_each_group_by_get_api():
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
+    assert len(response.json()) == 14
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_age_is_not_valid():
@@ -261,10 +302,12 @@ def test_average_age_of_each_group_by_get_api_with_age_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
 
     expectedJson = {'B': 11.0, 'C': 12.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
+    assert len(response.json()) == 2
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_name_is_not_valid():
@@ -274,10 +317,12 @@ def test_average_age_of_each_group_by_get_api_with_name_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
 
     expectedJson = {'A': 13.0, 'C': 12.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
+    assert len(response.json()) == 2
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
@@ -287,15 +332,22 @@ def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_InvalidDataMix.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
+        assert "Add Users From CSV Successfully" in response.json()["message"]
 
     expectedJson = {'U': 30.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
+    assert len(response.json()) == 1
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_empty_csv():
     file_path = os.path.join(ROOT, "data/test_emptyFile.csv")
     assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_emptyFile.csv", csvfile, 'text/csv')})
+        assert response.status_code == 422
+        assert 'No columns to parse from file' in response.json()["detail"]
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
@@ -308,6 +360,20 @@ def test_average_age_of_each_group_by_get_api_with_only_one_field():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_onlyNameField.csv", csvfile, 'text/csv')})
         assert response.status_code == 422
+        assert 'Age' in response.json()["detail"]
+
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
+    assert response.json() == {}
+
+def test_average_age_of_each_group_by_get_api_with_no_label_in_csv():
+    file_path = os.path.join(ROOT, 'data/test_NoLabelData.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_NoLabelData.csv", csvfile, 'text/csv')})
+        assert response.status_code == 422
+        assert 'Name' in response.json()["detail"]
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200
