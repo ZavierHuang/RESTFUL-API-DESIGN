@@ -26,6 +26,7 @@ class Services:
         return False
 
     def add_user_from_csv(self, file):
+        self.clear_users()
         df = pd.read_csv(file)
 
         df['Name'] = df['Name'].str.strip()

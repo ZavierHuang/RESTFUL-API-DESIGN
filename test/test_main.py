@@ -151,12 +151,32 @@ def test_delete_users_by_del_api_with_name_does_not_exist():
 Upload CSV + Add User
 1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)        => "Add Users From CSV Successfully"
 
-2.【200】Not All Age is Valid          => (data/test_ageIsNotValid.csv)     => * Only Store Valid Data *
-3.【200】Not All Name is Valid         => (data/test_nameIsNotValid.csv)  => * Only Store Valid Data *
+2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => * Only Store Valid Data *
+3.【200】Not All Name is Valid         => (data/test_NotAllNameIsValid.csv)  => * Only Store Valid Data *
+4.【200】Invalid Data Mix              => (data/test_InvalidDataMix.csv)     => * Only Store Valid Data *
 
-4.【422】Empty CSV                     => (data/test_emptyFile.csv)       => "No columns to parse"
-5.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
+5.【422】Empty CSV                     => (data/test_emptyFile.csv)       => "No columns to parse"
+6.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
 """
+
+def calcualteTotalValidData(file_path):
+    total = 0
+
+    with open(file_path, newline='', encoding='utf-8') as csvfile:
+        rows = csv.reader(csvfile)
+
+        for row in rows:
+            try:
+                name = row[0]
+                age = row[1]
+
+                if len(name.strip()) > 0 and age.isdigit() and int(age) > 0:
+                    total += 1
+            except IndexError:
+                continue
+
+    return total
+
 def test_upload_users_by_post_api():
     file_path = os.path.join(ROOT, "data/backend_users.csv")
     assert os.path.exists(file_path) is True
@@ -165,16 +185,49 @@ def test_upload_users_by_post_api():
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
-        csvfile.seek(0)  # go back to the start of csv file
-        df = pd.read_csv(csvfile)
-        totalData = df.shape[0]
-
     assert response.status_code == 200
     assert "Add Users From CSV Successfully" in response.json()["message"]
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert totalData == len(response.json())
+    assert len(response.json()) == 34
+
+def test_upload_users_by_post_api_with_age_is_not_valid():
+    file_path = os.path.join(ROOT, 'data/test_NotAllAgeIsValid.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
+        assert response.status_code == 200
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_upload_users_by_post_api_with_name_is_not_valid():
+    file_path = os.path.join(ROOT, 'data/test_NotAllNameIsValid.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
+        assert response.status_code == 200
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_upload_users_by_post_api_with_invalid_data_mix():
+    file_path = os.path.join(ROOT, 'data/test_InValidDataMix.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path,'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_invalidDataMix.csv", csvfile, 'text/csv')})
+        assert response.status_code == 200
+
+    expectedJson = {'U': 30}
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == expectedJson
 
 def test_upload_users_by_post_api_with_empty_csv():
     file_path = os.path.join(ROOT, 'data/test_emptyFile.csv')
@@ -194,69 +247,17 @@ def test_upload_users_by_post_api_with_only_one_field():
         assert response.status_code == 422
         assert 'Age' in response.json()["detail"]
 
-def test_upload_users_by_post_api_with_age_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_ageIsNotValid.csv')
-    assert os.path.exists(file_path) is True
-
-    with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("test_ageIsNotValid.csv", csvfile, 'text/csv')})
-        assert response.status_code == 200
-
-    response = client.get("/users")
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-
-def test_upload_users_by_post_api_with_name_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_nameIsNotValid.csv')
-    assert os.path.exists(file_path) is True
-
-    with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("test_ageIsNotValid.csv", csvfile, 'text/csv')})
-        assert response.status_code == 200
-
-    response = client.get("/users")
-    assert response.status_code == 200
-    assert len(response.json()) == 2
-
 """
 Calculate Average of each group 
 1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)        => response.json()) == {...}
 
-2.【200】Not All Age is Valid          => (data/test_ageIsNotValid.csv)   => response.json()) == {...}
-3.【200】Not All Name is Valid         => (data/test_nameIsNotValid.csv)  => response.json()) == {...}
+2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json()) == {...}
+3.【200】Not All Name is Valid         => (data/test_NotAllNameIsValid.csv)  => response.json()) == {...}
+4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)
 
-4.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json()) == {}
-5.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json()) == {}
+5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json()) == {}
+6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json()) == {}
 """
-
-def calcualteGroupAndAverage(file_path):
-    dictionary = {}
-
-    with open(file_path, newline='', encoding='utf-8') as csvfile:
-        rows = csv.reader(csvfile)
-
-        for row in rows:
-            try:
-                name = row[0]
-                age = row[1]
-
-                if len(name.strip()) > 0 and age.isdigit() and int(age) > 0:
-                    first_character = name.strip()[0]
-                    if first_character in dictionary:
-                        dictionary[first_character].append(int(age))
-                    else:
-                        dictionary[first_character] = [int(age)]
-            except IndexError:
-                return {}
-
-    sorted_dict = dict(sorted(dictionary.items()))
-
-    resultDict = {}
-
-    for key, valueList in sorted_dict.items():
-        resultDict[key] = sum(valueList)/len(valueList)
-
-    return resultDict
 
 def test_average_age_of_each_group_by_get_api():
     file_path = os.path.join(ROOT, "data/backend_users.csv")
@@ -266,34 +267,49 @@ def test_average_age_of_each_group_by_get_api():
         response = client.post("/users/upload", files={"file":("backend_users.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
+    expectedJson = {'A': 9.0, 'B': 14.0, 'C': 16.0, 'E': 29.0, 'F': 6.0,
+                    'I': 13.0, 'K': 14.0, 'M': 27.0, 'N': 16.5, 'P': 16.25,
+                    'R': 14.0, 'S': 20.25, 'V': 24.0, 'W': 9.5}
 
-    expectedJson = calcualteGroupAndAverage(file_path)
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_age_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_ageIsNotValid.csv')
+    file_path = os.path.join(ROOT, 'data/test_NotAllAgeIsValid.csv')
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("test_ageIsNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
-    expectedJson = calcualteGroupAndAverage(file_path)
+    expectedJson = {'B': 11.0, 'C': 12.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert response.json() == expectedJson
 
 def test_average_age_of_each_group_by_get_api_with_name_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_nameIsNotValid.csv')
+    file_path = os.path.join(ROOT, 'data/test_NotAllNameIsValid.csv')
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("test_ageIsNotValid.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
-    expectedJson = calcualteGroupAndAverage(file_path)
+    expectedJson = {'A': 13.0, 'C': 12.0}
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
+    assert response.json() == expectedJson
+
+def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
+    file_path = os.path.join(ROOT, 'data/test_InvalidDataMix.csv')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_InvalidDataMix.csv", csvfile, 'text/csv')})
+        assert response.status_code == 200
+
+    expectedJson = {'A': 13.0, 'C': 12.0}
     response = client.get("/users/averageAge")
     assert response.status_code == 200
     assert response.json() == expectedJson
@@ -302,10 +318,9 @@ def test_average_age_of_each_group_by_get_api_with_empty_csv():
     file_path = os.path.join(ROOT, "data/test_emptyFile.csv")
     assert os.path.exists(file_path) is True
 
-    expectedJson = calcualteGroupAndAverage(file_path)
     response = client.get("/users/averageAge")
     assert response.status_code == 200
-    assert response.json() == expectedJson
+    assert response.json() == {}
 
 def test_average_age_of_each_group_by_get_api_with_only_one_field():
     file_path = os.path.join(ROOT, 'data/test_onlyNameField.csv')
@@ -315,7 +330,6 @@ def test_average_age_of_each_group_by_get_api_with_only_one_field():
         response = client.post("/users/upload", files={"file": ("test_onlyNameField.csv", csvfile, 'text/csv')})
         assert response.status_code == 422
 
-    expectedJson = calcualteGroupAndAverage(file_path)
     response = client.get("/users/averageAge")
     assert response.status_code == 200
-    assert response.json() == expectedJson
+    assert response.json() == {}
