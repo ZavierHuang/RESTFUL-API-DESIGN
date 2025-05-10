@@ -35,6 +35,8 @@ def delete_user(username: str):
 
 @router.post("/users/upload")
 def upload_csv_users(file: UploadFile = File(...)):
+    if file.content_type not in ["text/csv"]:
+        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
     try:
         service.add_user_from_csv(file.file)
     except Exception as e:

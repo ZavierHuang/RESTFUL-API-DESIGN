@@ -178,6 +178,7 @@ Upload CSV + Add User
 5.【422】Empty CSV                     => (data/test_emptyFile.csv)       => "No columns to parse"
 6.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
 7.【422】No Label in CSV               => (data/test_NoLabel.csv)         => "Name"
+8.【422】Not CSV File                  => (data/test_PDF.pdf)             => "Only CSV files are allowed"
 """
 
 
@@ -291,6 +292,19 @@ def test_upload_users_by_post_api_with_no_label_in_csv():
     assert len(response.json()) == 0
     assert response.json() == []
 
+def test_upload_users_by_post_api_with_not_csv_file():
+    file_path = os.path.join(ROOT, 'data/test_PDF.pdf')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as pdfFile:
+        response = client.post("/users/upload", files={"file": ("test_PDF.pdf", pdfFile, 'application/pdf')})
+        assert response.status_code == 400
+        assert 'Only CSV files are allowed' in response.json()["detail"]
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+    assert response.json() == []
 
 """
 Calculate Average of each group 
@@ -303,6 +317,7 @@ Calculate Average of each group
 5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json() == {}
 6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json() == {}
 7.【200】No Label in CSV               => (data/test_NoLabelData.csv)     => response.json() == {}
+8.【200】Not CSV File                  => (data/test_PDF.pdf)             => response.json() == {}
 """
 
 
@@ -409,6 +424,19 @@ def test_average_age_of_each_group_by_get_api_with_no_label_in_csv():
         response = client.post("/users/upload", files={"file": ("test_NoLabelData.csv", csvfile, 'text/csv')})
         assert response.status_code == 422
         assert 'Name' in response.json()["detail"]
+
+    response = client.get("/users/averageAge")
+    assert response.status_code == 200
+    assert response.json() == {}
+
+def test_average_age_of_each_group_by_get_api_with_not_csv_file():
+    file_path = os.path.join(ROOT, 'data/test_PDF.pdf')
+    assert os.path.exists(file_path) is True
+
+    with open(file_path, 'rb') as csvfile:
+        response = client.post("/users/upload", files={"file": ("test_PDF.pdf", csvfile, 'application/pdf')})
+        assert response.status_code == 400
+        assert 'Only CSV files are allowed' in response.json()["detail"]
 
     response = client.get("/users/averageAge")
     assert response.status_code == 200

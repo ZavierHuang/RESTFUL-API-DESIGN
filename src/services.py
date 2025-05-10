@@ -41,7 +41,6 @@ class Services:
             user = User(name=row['Name'], age=row['Age']).dict()
             self.userList.append(user)
 
-
     def clear_users(self):
         self.userList.clear()
 
@@ -51,9 +50,5 @@ class Services:
             return {}
 
         df['firstCharacter'] = df['name'].str.strip().str[0]
-
-        # for key, group in df.groupby('firstCharacter'):
-        #     print(f"Group {key}")
-        #     print(group)
 
         return df.groupby('firstCharacter')['age'].mean().to_dict()
