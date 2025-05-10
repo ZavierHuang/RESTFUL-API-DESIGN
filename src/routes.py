@@ -22,7 +22,7 @@ def add_user(user: User):
         raise HTTPException(status_code=422, detail="Age must be greater than 0.")
 
     service.add_user(user)
-    return {"message": "Add User Successfully"}
+    return {"message": f"Add {user.name} Successfully"}
 
 
 @router.delete("/users/{username}")
@@ -38,8 +38,8 @@ def upload_csv_users(file: UploadFile = File(...)):
     try:
         service.add_user_from_csv(file.file)
     except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    return {"message": "Users Added From CSV"}
+        raise HTTPException(status_code=422, detail=str(e))
+    return {"message": "Add Users From CSV Successfully"}
 
 @router.get("/users/averageAge")
 def calculate_users_average_age_of_each_group():

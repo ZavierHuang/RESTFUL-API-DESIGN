@@ -1,7 +1,7 @@
-from pydantic import BaseModel, constr, StrictInt
+from pydantic import BaseModel
 
 
 class User(BaseModel):
-    name : constr(min_length=1)
-    age : StrictInt
+    name : str
+    age : int
 
