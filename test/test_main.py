@@ -5,9 +5,6 @@ from main import app
 
 client = TestClient(app)
 
-ROOT = r'D:\SideProject\FAST_API_Web_RESTFUL'
-
-
 @pytest.fixture(autouse=True)
 def setUp():
     print("SETUP")
@@ -183,7 +180,7 @@ Upload CSV + Add User
 
 
 def test_upload_users_by_post_api():
-    file_path = os.path.join(ROOT, "data/backend_users.csv")
+    file_path = '../data/backend_users.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -199,7 +196,7 @@ def test_upload_users_by_post_api():
 
 
 def test_upload_users_by_post_api_with_age_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_NotAllAgeIsValid.csv')
+    file_path = '../data/test_NotAllAgeIsValid.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -216,7 +213,7 @@ def test_upload_users_by_post_api_with_age_is_not_valid():
 
 
 def test_upload_users_by_post_api_with_name_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_NotAllNameIsValid.csv')
+    file_path = '../data/test_NotAllNameIsValid.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -233,7 +230,7 @@ def test_upload_users_by_post_api_with_name_is_not_valid():
 
 
 def test_upload_users_by_post_api_with_invalid_data_mix():
-    file_path = os.path.join(ROOT, 'data/test_InValidDataMix.csv')
+    file_path = '../data/test_InValidDataMix.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -249,7 +246,7 @@ def test_upload_users_by_post_api_with_invalid_data_mix():
 
 
 def test_upload_users_by_post_api_with_empty_csv():
-    file_path = os.path.join(ROOT, 'data/test_emptyFile.csv')
+    file_path = '../data/test_emptyFile.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as readFile:
@@ -264,7 +261,7 @@ def test_upload_users_by_post_api_with_empty_csv():
 
 
 def test_upload_users_by_post_api_with_only_one_field():
-    file_path = os.path.join(ROOT, 'data/test_onlyNameField.csv')
+    file_path = '../data/test_onlyNameField.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -279,7 +276,7 @@ def test_upload_users_by_post_api_with_only_one_field():
 
 
 def test_upload_users_by_post_api_with_no_label_in_csv():
-    file_path = os.path.join(ROOT, 'data/test_NoLabelData.csv')
+    file_path = '../data/test_NoLabelData.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -293,7 +290,7 @@ def test_upload_users_by_post_api_with_no_label_in_csv():
     assert response.json() == []
 
 def test_upload_users_by_post_api_with_not_csv_file():
-    file_path = os.path.join(ROOT, 'data/test_PDF.pdf')
+    file_path = '../data/test_PDF.pdf'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as pdfFile:
@@ -322,7 +319,7 @@ Calculate Average of each group
 
 
 def test_average_age_of_each_group_by_get_api():
-    file_path = os.path.join(ROOT, "data/backend_users.csv")
+    file_path = '../data/backend_users.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -341,7 +338,7 @@ def test_average_age_of_each_group_by_get_api():
 
 
 def test_average_age_of_each_group_by_get_api_with_age_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_NotAllAgeIsValid.csv')
+    file_path = '../data/test_NotAllAgeIsValid.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -357,7 +354,7 @@ def test_average_age_of_each_group_by_get_api_with_age_is_not_valid():
 
 
 def test_average_age_of_each_group_by_get_api_with_name_is_not_valid():
-    file_path = os.path.join(ROOT, 'data/test_NotAllNameIsValid.csv')
+    file_path = '../data/test_NotAllNameIsValid.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -373,7 +370,7 @@ def test_average_age_of_each_group_by_get_api_with_name_is_not_valid():
 
 
 def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
-    file_path = os.path.join(ROOT, 'data/test_InvalidDataMix.csv')
+    file_path = '../data/test_InvalidDataMix.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -389,7 +386,7 @@ def test_average_age_of_each_group_by_get_api_with_invalid_data_mix():
 
 
 def test_average_age_of_each_group_by_get_api_with_empty_csv():
-    file_path = os.path.join(ROOT, "data/test_emptyFile.csv")
+    file_path = '../data/test_emptyFile.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -403,7 +400,7 @@ def test_average_age_of_each_group_by_get_api_with_empty_csv():
 
 
 def test_average_age_of_each_group_by_get_api_with_only_one_field():
-    file_path = os.path.join(ROOT, 'data/test_onlyNameField.csv')
+    file_path = '../data/test_onlyNameField.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -417,7 +414,7 @@ def test_average_age_of_each_group_by_get_api_with_only_one_field():
 
 
 def test_average_age_of_each_group_by_get_api_with_no_label_in_csv():
-    file_path = os.path.join(ROOT, 'data/test_NoLabelData.csv')
+    file_path = '../data/test_NoLabelData.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
@@ -430,7 +427,7 @@ def test_average_age_of_each_group_by_get_api_with_no_label_in_csv():
     assert response.json() == {}
 
 def test_average_age_of_each_group_by_get_api_with_not_csv_file():
-    file_path = os.path.join(ROOT, 'data/test_PDF.pdf')
+    file_path = '../data/test_PDF.pdf'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
