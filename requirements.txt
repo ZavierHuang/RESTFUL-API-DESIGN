@@ -4,3 +4,4 @@ pandas
 pytest
 pytest-cov
 httpx
+python-multipart
