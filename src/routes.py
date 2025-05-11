@@ -36,13 +36,14 @@ def delete_user(username: str):
 
 @router.post("/users/upload")
 def upload_csv_users(file: UploadFile = File(...)):
+    service.clear_users()
     if file.content_type not in ["text/csv"]:
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
     try:
-        service.add_user_from_csv(file.file)
+        result = service.add_user_from_csv(file.file)
+        return {"message": f"Add Users From CSV Successfully {result}"}
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return {"message": "Add Users From CSV Successfully"}
 
 @router.get("/users/averageAge")
 def calculate_users_average_age_of_each_group():

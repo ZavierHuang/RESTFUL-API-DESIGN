@@ -197,7 +197,7 @@ def test_upload_users_by_post_api():
         assert response.status_code == 200
 
     assert response.status_code == 200
-    assert "Add Users From CSV Successfully" in response.json()["message"]
+    assert "Add Users From CSV Successfully (34/34)" in response.json()["message"]
 
     response = client.get("/users")
     assert response.status_code == 200
@@ -211,7 +211,7 @@ def test_upload_users_by_post_api_with_age_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
-        assert "Add Users From CSV Successfully" in response.json()["message"]
+        assert "Add Users From CSV Successfully (2/3)" in response.json()["message"]
 
     expectedJson = [{'name': 'Bob', 'age': 11}, {'name': 'Charlie', 'age': 12}]
 
@@ -228,7 +228,7 @@ def test_upload_users_by_post_api_with_name_is_not_valid():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_NotAllAgeIsValid.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
-        assert "Add Users From CSV Successfully" in response.json()["message"]
+        assert "Add Users From CSV Successfully (2/4)" in response.json()["message"]
 
     expectedJson = [{'name': 'Alice', 'age': 13}, {'name': 'Charlie', 'age': 12}]
 
@@ -245,7 +245,7 @@ def test_upload_users_by_post_api_with_invalid_data_mix():
     with open(file_path, 'rb') as csvfile:
         response = client.post("/users/upload", files={"file": ("test_invalidDataMix.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
-        assert "Add Users From CSV Successfully" in response.json()["message"]
+        assert "Add Users From CSV Successfully (1/6)" in response.json()["message"]
 
     expectedJson = [{'name': 'User', 'age': 30}]
     response = client.get("/users")
