@@ -310,16 +310,16 @@ def test_upload_users_by_post_api_with_not_csv_file():
 
 """
 Calculate Average of each group 
-1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)           => response.json() == {...}
+1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)           => response.json() == {...}, 14 groups
 
-2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json() == {...}
-3.【200】Not All Name is Valid         => (data/test_NtAllNameIsValid.csv)   => response.json() == {...}
-4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)     => response.json() == {...}
+2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json() == {...}, 2 groups
+3.【200】Not All Name is Valid         => (data/test_NtAllNameIsValid.csv)   => response.json() == {...}, 2 groups
+4.【200】Invalid Data Mix              => (data/test_InValidDataMix.csv)     => response.json() == {...}, 1 groups
 
-5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json() == {}
-6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json() == {}
-7.【200】No Label in CSV               => (data/test_NoLabelData.csv)     => response.json() == {}
-8.【200】Not CSV File                  => (data/test_PDF.pdf)             => response.json() == {}
+5.【200】Empty CSV                     => (data/test_emptyFile.csv)       => response.json() == {}, 0 groups
+6.【200】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => response.json() == {}, 0 groups
+7.【200】No Label in CSV               => (data/test_NoLabelData.csv)     => response.json() == {}, 0 groups
+8.【200】Not CSV File                  => (data/test_PDF.pdf)             => response.json() == {}, 0 groups
 """
 
 
