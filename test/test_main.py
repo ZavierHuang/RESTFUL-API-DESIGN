@@ -188,7 +188,7 @@ Upload CSV + Add User
 5.【422】Empty CSV                     => (data/test_emptyFile.csv)       => "No columns to parse"
 6.【422】Only Name Field exist in CSV  => (data/test_onlyNameField.csv)   => "Age"
 7.【422】No Label in CSV               => (data/test_NoLabel.csv)         => "Name"
-8.【422】Not CSV File                  => (data/test_PDF.pdf)             => "Only CSV files are allowed"
+8.【400】Not CSV File                  => (data/test_PDF.pdf)             => "Only CSV files are allowed"
 """
 
 
