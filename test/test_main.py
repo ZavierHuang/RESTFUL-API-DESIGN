@@ -94,7 +94,6 @@ def test_create_user_by_post_api_with_space_in_name():
 
 def test_create_user_by_post_api_with_name_is_empty():
     response = client.post("/users", json={"name": "", "age": 10})
-    print(response.json())
     assert response.status_code == 422
     assert 'Name cannot be Empty.' in response.json()["detail"]
 
