@@ -45,17 +45,66 @@ Add User
 3.【422】Age is not number   (str: "User", str: "ab")      =>  'Input should be a valid integer'
 4.【422】Age <= 0            (str: "User", int: -1)        =>  'Age must be greater than 0.'
 
+**** ADD
+【200】Age is float number (Integer)      (str: "User", float:10.0)              =>  'Add User Successfully'
+【422】Age is float number (not Integer)  (str: "User", float:10.5)              =>  'Input should be a valid integer'
+【200】Age is str number with space       (str: "User", str: "     10    ")      =>  'Add User Successfully'
+【422】Age is str number with space (mid) (str: "User", str: " 1  0  ")          =>  'Input should be a valid integer'
+****
+
 5.【200】Name with Space     (str: "  User  ", int: 10)    =>  'Add User Successfully'
 6.【422】Name is empty       (str: ""          , int: 10)  =>  'Name cannot be Empty.
 7.【422】Name is empty(mul)  (str: "          ", int: 10)  =>  'Name cannot be Empty.'
 8.【422】Name is not string  (int: 123         , int: 10)  =>  'Input should be a valid string'
+
+**** MODIFY
 9.【200】Update the age      ("User", 13) -> ("User", 10)  =>  'Add User Successfully'
+----------------------------------------------------------------------------------------
+9.【409】name already exist  ("User", 13)                  =>  'User already exist'
+****
 
 10.【422] Name Field doesn't exist (Non, int: 23)                    =>  'Field required'
 11.【422] Age Field doesn't exist (str:"User", Non)                  =>  'Field required'
 12.【422] Neither the name nor the age field exists (Non, Non)       =>  'Field required'
 """
 
+def test_create_user_by_post_api_age_is_float_number_with_integer():
+    response = client.post("/users", json={"name": "Zavier", "age": 10.0})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Add Zavier Successfully"
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert {"name": "Zavier", "age": 10} in response.json()
+    assert len(response.json()) == 1
+
+def test_create_user_by_post_api_age_is_float_number_with_not_integer():
+    response = client.post("/users", json={"name": "Zavier", "age": 10.5})
+    assert response.status_code == 422
+    assert "Input should be a valid integer" in response.json()['detail'][0]['msg']
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+
+def test_create_user_by_post_api_age_is_str_number_with_spaces():
+    response = client.post("/users", json={"name": "Zavier", "age": "   10   "})
+    assert response.status_code == 200
+    assert response.json()["message"] == "Add Zavier Successfully"
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert {"name": "Zavier", "age": 10} in response.json()
+    assert len(response.json()) == 1
+
+def test_create_user_by_post_api_age_is_str_number_with_middle_spaces():
+    response = client.post("/users", json={"name": "Zavier", "age": "   1  0   "})
+    assert response.status_code == 422
+    assert "Input should be a valid integer" in response.json()['detail'][0]['msg']
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
 
 def test_create_user_by_post_api():
     response = client.post("/users", json={"name": "Zavier", "age": 23})
@@ -110,20 +159,18 @@ def test_create_user_by_post_api_with_not_str_name():
     assert 'Input should be a valid string' in response.json()['detail'][0]['msg']
 
 
-def test_create_user_by_post_api_with_same_name_to_update():
+def test_create_user_by_post_api_with_same_name():
     response = client.post("/users", json={"name": "Zavier", "age": 23})
     assert response.status_code == 200
     assert response.json()["message"] == "Add Zavier Successfully"
 
     response = client.post("/users", json={"name": "Zavier", "age": 20})
-    assert response.status_code == 200
-    assert response.json()["message"] == "Add Zavier Successfully"
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Zavier Already Exist"
 
     response = client.get("/users")
     assert response.status_code == 200
-    assert {"name": "Zavier", "age": 23} not in response.json()
-    assert {"name": "Zavier", "age": 20} in response.json()
-    assert len(response.json()) == 1
+    assert response.json() == [{"name": "Zavier", "age": 23}]
 
 
 def test_create_user_by_post_api_with_name_does_not_exist():
@@ -147,7 +194,11 @@ def test_create_user_by_post_api_with_empty_json():
 """
 Delete User
 1.【200】User exist in db             => "Delete User Successfully"
+
+*** Modify
 2.【200】User doesn't exist in db     => "User does not exist"
+--------------------------------------------------------------
+2.【404】User doesn't exist in db     => "User does not exist"
 """
 
 
@@ -172,9 +223,47 @@ def test_delete_users_by_del_api():
 
 def test_delete_users_by_del_api_with_name_does_not_exist():
     response = client.delete("/users/Zavier")
-    assert response.status_code == 200
-    assert response.json()["message"] == "Zavier does not exist"
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Zavier does not exist"
 
+
+"""
+PUT (Update User age)
+1.【200】Normal Case (user exist in db)
+2.【404】User does not exist in db
+"""
+
+def test_update_user_by_put_api():
+    response = client.post("/users", json={"name": "Zavier", "age": 25})
+    assert response.status_code == 200
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == [{"name": "Zavier", "age": 25}]
+
+    response = client.put("/users/", json={"name": "Zavier", "age": 20})
+    assert response.status_code == 200
+    assert response.json()['message'] == "Zavier Age Update Successfully"
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == [{"name": "Zavier", "age": 20}]
+
+def test_update_user_by_put_api_but_name_does_not_exist():
+    response = client.post("/users", json={"name": "Zavier", "age": 25})
+    assert response.status_code == 200
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == [{"name": "Zavier", "age": 25}]
+
+    response = client.put("/users/", json={"name": "User", "age": 20})
+    assert response.status_code == 404
+    assert "User does not Exist" == response.json()['detail']
+
+    response = client.get("/users")
+    assert response.status_code == 200
+    assert response.json() == [{"name": "Zavier", "age": 25}]
 
 """
 Upload CSV + Add User

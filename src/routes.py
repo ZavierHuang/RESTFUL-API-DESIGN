@@ -22,8 +22,11 @@ def add_user(user: User):
     if user.age <= 0:
         raise HTTPException(status_code=422, detail="Age must be greater than 0.")
 
-    service.add_user(user)
-    return {"message": f"Add {user.name} Successfully"}
+    result = service.add_user(user)
+    if result:
+        return {"message": f"Add {user.name} Successfully"}
+    else:
+        raise HTTPException(status_code=409, detail=f"{user.name} Already Exist")
 
 
 @router.delete("/users/{username}")
@@ -32,7 +35,7 @@ def delete_user(username: str):
     if deleted:
         return {"message": f"Delete {username} Successfully"}
     else:
-        return {"message": f"{username} does not exist"}
+        raise HTTPException(status_code=404, detail=f"{username} does not exist")
 
 @router.post("/users/upload")
 def upload_csv_users(file: UploadFile = File(...)):
@@ -48,3 +51,13 @@ def upload_csv_users(file: UploadFile = File(...)):
 @router.get("/users/averageAge")
 def calculate_users_average_age_of_each_group():
     return service.calculate_users_average_age_of_each_group()
+
+@router.put("/users")
+def update_user_age(user: User):
+    user.name = user.name.strip()
+    result = service.update_user_age(user)
+
+    if result:
+        return {"message": f"{user.name} Age Update Successfully"}
+    else:
+        raise HTTPException(status_code=404, detail=f"{user.name} does not Exist")

@@ -1,4 +1,6 @@
 import pandas as pd
+from fastapi import HTTPException
+
 from src.models import User
 
 
@@ -15,8 +17,12 @@ class Services:
         return self.userList
 
     def add_user(self, user):
-        self.userList = [item for item in self.userList if item['name'] != user.name]
+        for item in self.userList:
+            if item['name'] == user.name:
+                return False
+
         self.userList.append(user.dict())
+        return True
 
     def delete_user(self, userName):
         for item in self.userList:
@@ -55,3 +61,10 @@ class Services:
         df['firstCharacter'] = df['name'].str.strip().str[0]
 
         return df.groupby('firstCharacter')['age'].mean().to_dict()
+
+    def update_user_age(self, user):
+        for item in self.userList:
+            if item['name'] == user.name:
+                item['age'] = user.age
+                return True
+        return False
