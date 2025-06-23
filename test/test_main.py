@@ -267,7 +267,7 @@ def test_update_user_by_put_api_but_name_does_not_exist():
 
 """
 Upload CSV + Add User
-1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)        => "Add Users From CSV Successfully"
+1.【200】Normal Case (All Valid Data)  => (data/normal_user.csv)        => "Add Users From CSV Successfully"
 
 2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => * Only Store Valid Data *
 3.【200】Not All Name is Valid         => (data/test_NotAllNameIsValid.csv)  => * Only Store Valid Data *
@@ -281,11 +281,11 @@ Upload CSV + Add User
 
 
 def test_upload_users_by_post_api():
-    file_path = f'{ROOT}/data/backend_users.csv'
+    file_path = f'{ROOT}/data/normal_user.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("backend_users.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("normal_user.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
 
     assert response.status_code == 200
@@ -402,7 +402,7 @@ def test_upload_users_by_post_api_with_not_csv_file():
 
 """
 Calculate Average of each group 
-1.【200】Normal Case (All Valid Data)  => (data/backend_users.csv)           => response.json() == {...}, 14 groups
+1.【200】Normal Case (All Valid Data)  => (data/normal_user.csv)           => response.json() == {...}, 14 groups
 
 2.【200】Not All Age is Valid          => (data/test_NotAllAgeIsValid.csv)   => response.json() == {...}, 2 groups
 3.【200】Not All Name is Valid         => (data/test_NtAllNameIsValid.csv)   => response.json() == {...}, 2 groups
@@ -416,11 +416,11 @@ Calculate Average of each group
 
 
 def test_average_age_of_each_group_by_get_api():
-    file_path = f'{ROOT}/data/backend_users.csv'
+    file_path = f'{ROOT}/data/normal_user.csv'
     assert os.path.exists(file_path) is True
 
     with open(file_path, 'rb') as csvfile:
-        response = client.post("/users/upload", files={"file": ("backend_users.csv", csvfile, 'text/csv')})
+        response = client.post("/users/upload", files={"file": ("normal_user.csv", csvfile, 'text/csv')})
         assert response.status_code == 200
         assert "Add Users From CSV Successfully" in response.json()["message"]
 
