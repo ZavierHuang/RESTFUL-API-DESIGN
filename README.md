@@ -24,3 +24,7 @@
 
 ## Swagger RESTFUL API
 ![img_2.png](image/img_2.png)
+
+## Report
+- Test Cases : 38
+- Code Coverage : 100%
